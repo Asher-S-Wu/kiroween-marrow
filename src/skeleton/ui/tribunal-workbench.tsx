@@ -1,6 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Download, FilePlus2, Loader2, Share2 } from 'lucide-react';
 import type { DomainSpec } from '@/skeleton/schema/domain';
@@ -12,9 +21,10 @@ import { DeliberationFeed, type StreamingTurnDraft } from '@/skeleton/ui/deliber
 import { EvidenceGraphView } from '@/skeleton/ui/evidence-graph';
 import {
   buildLlmHeaders,
-  getDefaultClientLlmOverride,
-  loadStoredLlmOverride,
+  getStoredLlmOverrideSnapshot,
   ModelSettingsPopover,
+  parseStoredLlmOverride,
+  subscribeStoredLlmOverride,
   type ClientLlmOverride,
 } from '@/skeleton/ui/model-settings-popover';
 
@@ -39,7 +49,13 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
 }) {
   const isLight = spec.theme.mode === 'light';
 
-  const [llmOverride, setLlmOverride] = useState<ClientLlmOverride>(getDefaultClientLlmOverride);
+  // Server and first client render see null (defaults); stored tab preferences apply after hydration.
+  const storedLlmRaw = useSyncExternalStore(
+    subscribeStoredLlmOverride,
+    getStoredLlmOverrideSnapshot,
+    () => null,
+  );
+  const llmOverride = useMemo(() => parseStoredLlmOverride(storedLlmRaw), [storedLlmRaw]);
   const [title, setTitle] = useState(spec.presets[0]?.title ?? '');
   const [rawInput, setRawInput] = useState(spec.presets[0]?.rawInput ?? '');
   const [isPublic, setIsPublic] = useState(true);
@@ -65,7 +81,6 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    setLlmOverride(loadStoredLlmOverride());
     return () => {
       abortRef.current?.abort();
     };
@@ -397,7 +412,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
               <span>New case</span>
             </button>
           )}
-          <ModelSettingsPopover value={llmOverride} onChange={setLlmOverride} isLight={isLight} />
+          <ModelSettingsPopover value={llmOverride} isLight={isLight} />
           <Link
             href={peerApp.routePath}
             className="hidden sm:inline-flex items-center border px-3 py-1.5 text-xs font-medium"

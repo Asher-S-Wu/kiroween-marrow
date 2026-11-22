@@ -26,27 +26,41 @@ export function getDefaultClientLlmOverride(): ClientLlmOverride {
   };
 }
 
-export function loadStoredLlmOverride(): ClientLlmOverride {
-  if (typeof window === 'undefined') {
-    return getDefaultClientLlmOverride();
-  }
+export function parseStoredLlmOverride(raw: string | null): ClientLlmOverride {
+  if (!raw) return getDefaultClientLlmOverride();
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return getDefaultClientLlmOverride();
-    const parsed = JSON.parse(raw) as Partial<ClientLlmOverride>;
+    const parsed = JSON.parse(raw) as Partial<ClientLlmOverride> | null;
     return {
-      mode: parsed.mode === 'single' ? 'single' : 'ensemble',
-      apiKey: parsed.apiKey ?? '',
-      model: parsed.model || DEFAULT_SINGLE_MODEL,
+      mode: parsed?.mode === 'single' ? 'single' : 'ensemble',
+      apiKey: parsed?.apiKey ?? '',
+      model: parsed?.model || DEFAULT_SINGLE_MODEL,
     };
   } catch {
     return getDefaultClientLlmOverride();
   }
 }
 
-export function saveStoredLlmOverride(override: ClientLlmOverride): void {
-  if (typeof window === 'undefined') return;
+const listeners = new Set<() => void>();
+
+export function getStoredLlmOverrideSnapshot(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.sessionStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function subscribeStoredLlmOverride(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function saveStoredLlmOverride(override: ClientLlmOverride): void {
   window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(override));
+  listeners.forEach((listener) => listener());
 }
 
 export function buildLlmHeaders(override: ClientLlmOverride): Record<string, string> {
@@ -62,11 +76,9 @@ export function buildLlmHeaders(override: ClientLlmOverride): Record<string, str
 
 export function ModelSettingsPopover({
   value,
-  onChange,
   isLight,
 }: {
   value: ClientLlmOverride;
-  onChange: (next: ClientLlmOverride) => void;
   isLight: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -87,7 +99,6 @@ export function ModelSettingsPopover({
 
   const handleSave = () => {
     saveStoredLlmOverride(draft);
-    onChange(draft);
     setOpen(false);
   };
 
@@ -95,7 +106,6 @@ export function ModelSettingsPopover({
     const def = getDefaultClientLlmOverride();
     saveStoredLlmOverride(def);
     setDraft(def);
-    onChange(def);
     setOpen(false);
   };
 
