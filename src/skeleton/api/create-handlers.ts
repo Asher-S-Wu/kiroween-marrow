@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import type { DomainSpec } from '@/skeleton/schema/domain';
 import { CreateSessionRequestSchema, type StreamEvent } from '@/skeleton/schema/session';
 import { sliceEvidence } from '@/skeleton/engine/slicer';
-import { resolveLlmConfig } from '@/skeleton/llm/client';
+import { resolveLlmRouting } from '@/skeleton/llm/client';
 import { runDeliberationStream } from '@/skeleton/engine/orchestrator';
 import {
   createSessionRecord,
@@ -29,7 +29,7 @@ export function createDeliberationHandlers<TVerdict extends Record<string, unkno
 
   async function createSession(request: Request) {
     try {
-      const llmConfig = resolveLlmConfig(request.headers);
+      const llmConfig = resolveLlmRouting(request.headers);
       const body = await request.json();
       const parsed = CreateSessionRequestSchema.safeParse(body);
       if (!parsed.success) {
@@ -49,14 +49,16 @@ export function createDeliberationHandlers<TVerdict extends Record<string, unkno
         title: parsed.data.title,
         rawInput: parsed.data.rawInput,
         evidenceItems,
-        model: llmConfig.model,
+        mode: llmConfig.mode,
+        model: llmConfig.displayLabel,
+        judgeModel: llmConfig.judgeModel,
         isPublic: parsed.data.isPublic,
       });
 
       return NextResponse.json({ session: record }, { status: 201 });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create session';
-      const status = message.includes('Missing LLM API key') ? 400 : 500;
+      const status = message.includes('Missing OpenRouter API key') ? 400 : 500;
       return NextResponse.json({ error: message }, { status });
     }
   }
@@ -74,9 +76,9 @@ export function createDeliberationHandlers<TVerdict extends Record<string, unkno
 
     let llmConfig;
     try {
-      llmConfig = resolveLlmConfig(request.headers);
+      llmConfig = resolveLlmRouting(request.headers);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Missing LLM configuration';
+      const message = err instanceof Error ? err.message : 'Missing OpenRouter configuration';
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
@@ -92,7 +94,9 @@ export function createDeliberationHandlers<TVerdict extends Record<string, unkno
             type: 'session_started',
             sessionId: session._id,
             evidenceItems: session.evidenceItems,
+            mode: session.meta.mode ?? 'single',
             model: session.meta.model,
+            judgeModel: session.meta.judgeModel ?? session.meta.model,
           });
           for (const turn of session.turns) {
             emit({ type: 'turn_complete', turn });
@@ -101,6 +105,7 @@ export function createDeliberationHandlers<TVerdict extends Record<string, unkno
             type: 'verdict_ready',
             evidenceGraph: session.evidenceGraph,
             verdict: session.verdict,
+            judgeModel: session.meta.judgeModel ?? session.meta.model,
           });
           emit({
             type: 'session_complete',

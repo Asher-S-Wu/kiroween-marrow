@@ -88,8 +88,8 @@ export default async function MarrowPortalPage() {
                 className="w-full h-auto block"
               />
               <figcaption className="px-4 py-2.5 border-t border-[#262C36] flex items-center justify-between font-mono text-[11px] text-[#8B949E]">
-                <span>Single Next.js App Router service</span>
-                <span>MongoDB + SSE streaming</span>
+                <span>4-Model OpenRouter Ensemble</span>
+                <span>Next.js 16 + MongoDB</span>
               </figcaption>
             </figure>
           </div>
@@ -220,10 +220,10 @@ export default async function MarrowPortalPage() {
                     'Streams Round 1 independent analysis, Round 2 peer cross-examination, and Round 3 Zod-validated graph & verdict JSON.',
                 },
                 {
-                  path: 'src/skeleton/api/create-handlers.ts',
-                  title: 'Declarative route factory',
+                  path: 'src/skeleton/llm/models.ts',
+                  title: '4-model OpenRouter ensemble',
                   detail:
-                    'Bind any DomainSpec into createDeliberationHandlers(spec) to expose full REST creation, archive listing, and SSE endpoints.',
+                    'Seats Claude Haiku 5.5, Meta Muse Ember, and DeepSeek V4.1 Flash as adversarial examiners with GPT-6.1 Terra adjudicating Round 3.',
                 },
                 {
                   path: 'src/skeleton/ui/evidence-graph.tsx',

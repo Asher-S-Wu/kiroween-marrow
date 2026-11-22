@@ -36,11 +36,16 @@ src/
    ```bash
    MONGODB_URI=mongodb://localhost:27017/marrow
    MONGODB_DB=marrow
-   LLM_API_KEY=your-openai-compatible-key
-   LLM_BASE_URL=https://api.openai.com/v1
-   LLM_MODEL=gpt-4o-mini
+   OPENROUTER_API_KEY=sk-or-v1-...
+   LLM_ROUTING_MODE=ensemble
    ```
-   *(Visitors can also supply their own per-tab OpenAI-compatible key via **Model settings** in the UI without storing it in MongoDB.)*
+   By default, **4-Model Ensemble** routes each seat to a distinct November 2026 model via OpenRouter:
+   - Examiner 1: `anthropic/claude-haiku-5.5`
+   - Examiner 2: `meta/muse-ember`
+   - Examiner 3: `deepseek/deepseek-v4.1-flash-1017`
+   - Round 3 Arbiter: `openai/gpt-6.1-terra`
+
+   *(Visitors can also switch to Single Model mode—including the free `inclusionai/ling-3.2-flash:free` tier—or supply their own tab-scoped OpenRouter key in **Model settings**.)*
 
 2. Install and run locally:
    ```bash

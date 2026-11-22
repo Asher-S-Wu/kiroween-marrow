@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { ArrowLeft, Check, Download, FilePlus2, Loader2, Share2 } from 'lucide-react';
 import type { DomainSpec } from '@/skeleton/schema/domain';
 import type { DeliberationTurn, EvidenceGraph, EvidenceItem, SessionRecord, StreamEvent } from '@/skeleton/schema/session';
+import { DEFAULT_ENSEMBLE_LINEUP, shortModelLabel } from '@/skeleton/llm/models';
 import { MarrowMark } from '@/skeleton/ui/marrow-mark';
 import { EvidenceRail } from '@/skeleton/ui/evidence-rail';
 import { DeliberationFeed, type StreamingTurnDraft } from '@/skeleton/ui/deliberation-feed';
 import { EvidenceGraphView } from '@/skeleton/ui/evidence-graph';
 import {
   buildLlmHeaders,
+  getDefaultClientLlmOverride,
   loadStoredLlmOverride,
   ModelSettingsPopover,
   type ClientLlmOverride,
@@ -37,7 +39,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
 }) {
   const isLight = spec.theme.mode === 'light';
 
-  const [llmOverride, setLlmOverride] = useState<ClientLlmOverride>({ apiKey: '', baseUrl: '', model: '' });
+  const [llmOverride, setLlmOverride] = useState<ClientLlmOverride>(getDefaultClientLlmOverride);
   const [title, setTitle] = useState(spec.presets[0]?.title ?? '');
   const [rawInput, setRawInput] = useState(spec.presets[0]?.rawInput ?? '');
   const [isPublic, setIsPublic] = useState(true);
@@ -55,6 +57,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
   const [running, setRunning] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(initialSession?.errorMessage ?? null);
   const [modelUsed, setModelUsed] = useState<string>(initialSession?.meta.model ?? '');
+  const [judgeModelUsed, setJudgeModelUsed] = useState<string>(initialSession?.meta.judgeModel ?? '');
   const [durationMs, setDurationMs] = useState<number | undefined>(initialSession?.meta.durationMs);
   const [activeEvidenceId, setActiveEvidenceId] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -93,6 +96,16 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
     }
     return counts;
   }, [turns]);
+
+  const assignedSeatModels = useMemo(() => {
+    if (llmOverride.mode === 'single') {
+      return {
+        examiners: [llmOverride.model, llmOverride.model, llmOverride.model],
+        judge: llmOverride.model,
+      };
+    }
+    return DEFAULT_ENSEMBLE_LINEUP;
+  }, [llmOverride.mode, llmOverride.model]);
 
   const consumeStream = useCallback(
     async (id: string, override: ClientLlmOverride) => {
@@ -143,6 +156,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
               case 'session_started':
                 setEvidenceItems(event.evidenceItems);
                 setModelUsed(event.model);
+                setJudgeModelUsed(event.judgeModel);
                 break;
               case 'round_started':
                 setActiveRound(event.round);
@@ -155,6 +169,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
                   agentName: event.agentName,
                   agentTitle: event.agentTitle,
                   accentHex: event.accentHex,
+                  model: event.model,
                   stance: event.stance,
                   challengesTurnId: event.challengesTurnId,
                   content: '',
@@ -176,6 +191,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
               case 'verdict_ready':
                 setEvidenceGraph(event.evidenceGraph);
                 setVerdict(event.verdict as TVerdict);
+                setJudgeModelUsed(event.judgeModel);
                 break;
               case 'session_complete':
                 setDurationMs(event.durationMs);
@@ -230,6 +246,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
       setActiveRound(1);
       setActiveEvidenceId(null);
       setModelUsed(created.meta.model);
+      setJudgeModelUsed(created.meta.judgeModel ?? created.meta.model);
       setDurationMs(undefined);
 
       window.history.replaceState(null, '', `${spec.routePath}/${created._id}`);
@@ -539,31 +556,55 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
               </form>
             </div>
 
-            {/* Right Sidebar: Panel Roster + Archived MongoDB Dossiers */}
+            {/* Right Sidebar: Seated Examiners + Assigned OpenRouter Models + Archived Dossiers */}
             <aside className="lg:col-span-4 space-y-8">
               <div
                 className="border p-5 space-y-4"
                 style={{ backgroundColor: 'var(--arena-surface)', borderColor: 'var(--arena-border)' }}
               >
-                <h3 className="font-serif text-lg font-semibold">Seated examiners</h3>
+                <div className="flex items-baseline justify-between gap-2">
+                  <h3 className="font-serif text-lg font-semibold">Seated examiners</h3>
+                  <span className="font-mono text-[10.5px]" style={{ color: 'var(--arena-muted)' }}>
+                    OpenRouter
+                  </span>
+                </div>
+
                 <div className="space-y-4">
-                  {spec.personas.map((persona) => (
-                    <div
-                      key={persona.id}
-                      className="pl-3.5 border-l-2"
-                      style={{ borderLeftColor: persona.accentHex }}
-                    >
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-xs font-semibold">{persona.name}</span>
-                        <span className="font-mono text-[10.5px]" style={{ color: persona.accentHex }}>
-                          {persona.title}
-                        </span>
+                  {spec.personas.map((persona, idx) => {
+                    const seatModel = assignedSeatModels.examiners[idx];
+                    return (
+                      <div
+                        key={persona.id}
+                        className="pl-3.5 border-l-2"
+                        style={{ borderLeftColor: persona.accentHex }}
+                      >
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="text-xs font-semibold">{persona.name}</span>
+                          <span className="font-mono text-[10.5px]" style={{ color: persona.accentHex }}>
+                            {persona.title}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--arena-muted)' }}>
+                          {persona.lens}
+                        </p>
+                        <div className="mt-1.5 font-mono text-[10.5px]" style={{ color: 'var(--arena-ink)', opacity: 0.78 }}>
+                          Model: {shortModelLabel(seatModel)}
+                        </div>
                       </div>
-                      <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--arena-muted)' }}>
-                        {persona.lens}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
+
+                  <div
+                    className="pt-3 border-t flex items-baseline justify-between gap-2 text-xs"
+                    style={{ borderColor: 'var(--arena-border)' }}
+                  >
+                    <span className="font-medium" style={{ color: 'var(--arena-muted)' }}>
+                      Round 3 Arbiter
+                    </span>
+                    <span className="font-mono text-[11px]" style={{ color: 'var(--arena-accent-alt)' }}>
+                      {shortModelLabel(assignedSeatModels.judge)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -633,7 +674,10 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
               <div className="min-w-0">
                 <h2 className="font-serif text-lg font-semibold truncate">{sessionTitle || title}</h2>
                 <div className="mt-0.5 flex flex-wrap items-center gap-3 font-mono text-[11px]" style={{ color: 'var(--arena-muted)' }}>
-                  {modelUsed && <span>Model: {modelUsed}</span>}
+                  {modelUsed && <span>{modelUsed}</span>}
+                  {judgeModelUsed && judgeModelUsed !== modelUsed && (
+                    <span>Arbiter: {shortModelLabel(judgeModelUsed)}</span>
+                  )}
                   {durationMs !== undefined && <span>{(durationMs / 1000).toFixed(1)}s</span>}
                   {running && (
                     <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--arena-accent)' }}>
@@ -711,7 +755,7 @@ export function TribunalWorkbench<TVerdict extends Record<string, unknown>>({
                 </div>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--arena-muted)' }}>
                   {running
-                    ? 'Synthesizing final adjudication and evidence graph once both examination rounds conclude.'
+                    ? `Synthesizing final adjudication and evidence graph via ${shortModelLabel(judgeModelUsed || assignedSeatModels.judge)} once both examination rounds conclude.`
                     : 'No final adjudication recorded for this dossier.'}
                 </p>
               </div>

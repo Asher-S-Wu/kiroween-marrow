@@ -13,7 +13,9 @@ export async function createSessionRecord(input: {
   title: string;
   rawInput: string;
   evidenceItems: EvidenceItem[];
+  mode: 'ensemble' | 'single';
   model: string;
+  judgeModel: string;
   isPublic: boolean;
 }): Promise<SessionRecord> {
   const now = new Date().toISOString();
@@ -25,7 +27,11 @@ export async function createSessionRecord(input: {
     evidenceItems: input.evidenceItems,
     status: 'pending',
     turns: [],
-    meta: { model: input.model },
+    meta: {
+      mode: input.mode,
+      model: input.model,
+      judgeModel: input.judgeModel,
+    },
     isPublic: input.isPublic,
     createdAt: now,
     updatedAt: now,
@@ -41,14 +47,21 @@ export async function getSessionById(id: string): Promise<SessionRecord | null> 
   return col.findOne({ _id: id });
 }
 
-export async function markSessionRunning(id: string, model: string): Promise<void> {
+export async function markSessionRunning(
+  id: string,
+  mode: 'ensemble' | 'single',
+  model: string,
+  judgeModel: string,
+): Promise<void> {
   const col = await getSessionsCollection();
   await col.updateOne(
     { _id: id },
     {
       $set: {
         status: 'running',
+        'meta.mode': mode,
         'meta.model': model,
+        'meta.judgeModel': judgeModel,
         updatedAt: new Date().toISOString(),
       },
       $unset: { errorMessage: '' },
@@ -71,6 +84,7 @@ export async function completeSessionRecord(params: {
   id: string;
   evidenceGraph: EvidenceGraph;
   verdict: Record<string, unknown>;
+  judgeModel: string;
   durationMs: number;
   totalTokens?: number;
 }): Promise<void> {
@@ -82,6 +96,7 @@ export async function completeSessionRecord(params: {
         status: 'completed',
         evidenceGraph: params.evidenceGraph,
         verdict: params.verdict,
+        'meta.judgeModel': params.judgeModel,
         'meta.durationMs': params.durationMs,
         ...(params.totalTokens !== undefined ? { 'meta.totalTokens': params.totalTokens } : {}),
         updatedAt: new Date().toISOString(),

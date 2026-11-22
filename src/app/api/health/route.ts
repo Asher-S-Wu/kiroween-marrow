@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { pingMongo } from '@/skeleton/storage/mongo';
+import {
+  DEFAULT_ENSEMBLE_LINEUP,
+  OPENROUTER_DEFAULT_BASE_URL,
+} from '@/skeleton/llm/models';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const llmConfigured = Boolean(process.env.LLM_API_KEY?.trim());
-  const llmModel = process.env.LLM_MODEL?.trim() || 'gpt-4o-mini';
+  const openrouterConfigured = Boolean(
+    process.env.OPENROUTER_API_KEY?.trim() || process.env.LLM_API_KEY?.trim(),
+  );
 
   try {
     const db = await pingMongo();
@@ -14,8 +19,11 @@ export async function GET() {
       node: process.version,
       mongodb: db,
       llm: {
-        serverKeyConfigured: llmConfigured,
-        defaultModel: llmModel,
+        provider: 'openrouter',
+        baseUrl: process.env.OPENROUTER_BASE_URL?.trim() || OPENROUTER_DEFAULT_BASE_URL,
+        serverKeyConfigured: openrouterConfigured,
+        defaultMode: process.env.LLM_ROUTING_MODE?.trim() === 'single' ? 'single' : 'ensemble',
+        ensemble: DEFAULT_ENSEMBLE_LINEUP,
       },
       timestamp: new Date().toISOString(),
     });
@@ -27,8 +35,9 @@ export async function GET() {
         node: process.version,
         mongodb: { ok: false, error: message },
         llm: {
-          serverKeyConfigured: llmConfigured,
-          defaultModel: llmModel,
+          provider: 'openrouter',
+          serverKeyConfigured: openrouterConfigured,
+          ensemble: DEFAULT_ENSEMBLE_LINEUP,
         },
         timestamp: new Date().toISOString(),
       },

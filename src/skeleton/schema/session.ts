@@ -17,6 +17,7 @@ export const DeliberationTurnSchema = z.object({
   agentName: z.string().min(1),
   agentTitle: z.string().min(1),
   accentHex: z.string().min(1),
+  model: z.string().min(1),
   stance: z.enum(['critical', 'cautious', 'constructive']),
   content: z.string(),
   citedEvidenceIds: z.array(z.string()),
@@ -71,7 +72,9 @@ export interface SessionRecord {
   evidenceGraph?: EvidenceGraph;
   verdict?: Record<string, unknown>;
   meta: {
+    mode: 'ensemble' | 'single';
     model: string;
+    judgeModel?: string;
     durationMs?: number;
     totalTokens?: number;
   };
@@ -81,7 +84,14 @@ export interface SessionRecord {
 }
 
 export type StreamEvent =
-  | { type: 'session_started'; sessionId: string; evidenceItems: EvidenceItem[]; model: string }
+  | {
+      type: 'session_started';
+      sessionId: string;
+      evidenceItems: EvidenceItem[];
+      mode: 'ensemble' | 'single';
+      model: string;
+      judgeModel: string;
+    }
   | { type: 'round_started'; round: 1 | 2 | 3; label: string }
   | {
       type: 'turn_started';
@@ -91,11 +101,17 @@ export type StreamEvent =
       agentName: string;
       agentTitle: string;
       accentHex: string;
+      model: string;
       stance: 'critical' | 'cautious' | 'constructive';
       challengesTurnId?: string;
     }
   | { type: 'token'; turnId: string; delta: string }
   | { type: 'turn_complete'; turn: DeliberationTurn }
-  | { type: 'verdict_ready'; evidenceGraph: EvidenceGraph; verdict: Record<string, unknown> }
+  | {
+      type: 'verdict_ready';
+      evidenceGraph: EvidenceGraph;
+      verdict: Record<string, unknown>;
+      judgeModel: string;
+    }
   | { type: 'session_complete'; sessionId: string; durationMs: number; totalTokens?: number }
   | { type: 'error'; message: string };

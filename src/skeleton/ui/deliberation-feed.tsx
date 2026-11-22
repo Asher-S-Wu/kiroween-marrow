@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { DeliberationTurn } from '@/skeleton/schema/session';
+import { shortModelLabel } from '@/skeleton/llm/models';
 
 export interface StreamingTurnDraft {
   id: string;
@@ -10,6 +11,7 @@ export interface StreamingTurnDraft {
   agentName: string;
   agentTitle: string;
   accentHex: string;
+  model: string;
   stance: 'critical' | 'cautious' | 'constructive';
   challengesTurnId?: string;
   content: string;
@@ -107,22 +109,35 @@ export function DeliberationFeed({
                 style={{ borderLeftColor: data.accentHex }}
               >
                 <header className="flex flex-wrap items-baseline justify-between gap-2 mb-2.5">
-                  <div className="flex flex-wrap items-baseline gap-2.5">
+                  <div className="flex flex-wrap items-baseline gap-2">
                     <span className="text-sm font-semibold" style={{ color: 'var(--arena-ink)' }}>
                       {data.agentName}
                     </span>
-                    <span className="font-mono text-[11.5px]" style={{ color: 'var(--arena-muted)' }}>
+                    <span className="font-mono text-[11px]" style={{ color: 'var(--arena-muted)' }}>
                       {data.agentTitle}
                     </span>
+                    {data.model && (
+                      <span
+                        className="font-mono text-[10.5px] px-1.5 py-0.5 border"
+                        style={{
+                          borderColor: 'var(--arena-border)',
+                          backgroundColor: 'var(--arena-surface)',
+                          color: 'var(--arena-muted)',
+                        }}
+                        title={data.model}
+                      >
+                        {shortModelLabel(data.model)}
+                      </span>
+                    )}
                     {challenged && (
                       <span
-                        className="font-mono text-[11px] px-1.5 py-0.5"
+                        className="font-mono text-[10.5px] px-1.5 py-0.5"
                         style={{
                           backgroundColor: isLight ? 'rgba(185,28,28,0.08)' : 'rgba(229,72,77,0.14)',
                           color: 'var(--arena-accent)',
                         }}
                       >
-                        Cross-examining {challenged.agentName}
+                        Interrogating {challenged.agentName}
                       </span>
                     )}
                   </div>
