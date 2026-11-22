@@ -33,14 +33,15 @@ The steering files describe what belongs in the shared engine and what each appl
 | Field | Entry |
 | --- | --- |
 | Project name | Marrow |
+| Devpost project page | [Marrow at Kiroween 2026](https://devpost.com/software/marrow-cu3gjo) |
 | Main category | Skeleton Crew |
 | Built with | Kiro, TypeScript, React, Next.js, Node.js, MongoDB, Zod, OpenRouter, Railway |
 | Public repository | [Asher-S-Wu/kiroween-marrow](https://github.com/Asher-S-Wu/kiroween-marrow) |
 | Working applications | [Postmortem Court](https://marrow-web-production.up.railway.app/court) and [Defense Tribunal](https://marrow-web-production.up.railway.app/defense) |
 | Judge access | Open either link in a desktop browser. No account or personal API key is required. |
-| YouTube video | Add the public watch URL after uploading the English demo. |
+| YouTube video | [Marrow demo (1:27, English captions)](https://www.youtube.com/watch?v=RU369qMlzv0) |
 | Project image | [Marrow cover, 1600 × 900](../public/images/marrow-og.png) |
 
-## Video upload
+## Demo video
 
-Use **Marrow | One review engine, two applications | Kiroween 2026** as the video title. The 87-second desktop recording follows the same two cases linked above. It includes English narration and a selectable English caption track. A separate subtitle file is ready for YouTube Studio. [English subtitles](Marrow-English.srt)
+The recording follows the checkout incident and manuscript review in the judge walkthrough. It includes English narration and selectable English captions. [Download the English subtitles](Marrow-English.srt)

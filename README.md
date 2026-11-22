@@ -6,6 +6,8 @@
 
 Marrow is a declarative multi-agent cross-examination and evidence-graph skeleton built as a single **Next.js 16 App Router** + **Node.js 26** + **MongoDB** full-stack service. Swap one `DomainSpec` and visual token register to instantiate a completely distinct analytical tribunal—zero changes to orchestration, evidence slicing, SSE streaming, graph layout, or persistence.
 
+[Kiroween 2026 project on Devpost](https://devpost.com/software/marrow-cu3gjo) · [Watch the demo on YouTube (1:27, English captions)](https://www.youtube.com/watch?v=RU369qMlzv0)
+
 ## Two Applications Powered by `src/skeleton/`
 
 Built with Kiro for the Kiroween 2026 Skeleton Crew category. Try the two live applications and inspect the source folder for each.
