@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-jakarta), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --marrow-canvas: #121417;
+  --marrow-surface: #1c2026;
+  --marrow-elevated: #262c36;
+  --marrow-ink: #eae6df;
+  --marrow-muted: #8b949e;
+  --marrow-border: #262c36;
+  --marrow-signal: #3b82f6;
+  --marrow-verdict: #e5484d;
+
+  /* Active arena semantic variables (overridden per app register) */
+  --arena-canvas: #121417;
+  --arena-surface: #1c2026;
+  --arena-elevated: #262c36;
+  --arena-ink: #eae6df;
+  --arena-muted: #8b949e;
+  --arena-border: #262c36;
+  --arena-accent: #e5484d;
+  --arena-accent-alt: #2dd4bf;
+  --arena-warn: #f59e0b;
+}
+
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--marrow-canvas);
+  color: var(--marrow-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Subtle architectural drafting grid for portal canvas */
+.drafting-grid {
+  background-image:
+    linear-gradient(to right, rgba(234, 230, 223, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(234, 230, 223, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Forensic subtle hairline scan grid for Postmortem Court */
+.forensic-grid {
+  background-image:
+    linear-gradient(to right, rgba(234, 230, 223, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(234, 230, 223, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Archival editorial ruled paper subtle grain for Defense Tribunal */
+.editorial-paper {
+  background-image: radial-gradient(rgba(22, 24, 29, 0.045) 0.75px, transparent 0.75px);
+  background-size: 20px 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom hairline scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 148, 158, 0.28);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 148, 158, 0.48);
+}
