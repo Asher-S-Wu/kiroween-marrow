@@ -43,7 +43,6 @@ function buildProviderHeaders(apiKey: string, baseUrl: string): Record<string, s
 
 export function resolveLlmRouting(headers?: Headers): LlmRoutingConfig {
   const headerKey = headers?.get('x-llm-api-key')?.trim();
-  const headerBaseUrl = headers?.get('x-llm-base-url')?.trim();
   const headerMode = headers?.get('x-llm-mode')?.trim();
   const headerModel = headers?.get('x-llm-model')?.trim();
 
@@ -54,7 +53,6 @@ export function resolveLlmRouting(headers?: Headers): LlmRoutingConfig {
     '';
 
   const baseUrl = (
-    headerBaseUrl ||
     process.env.OPENROUTER_BASE_URL?.trim() ||
     process.env.LLM_BASE_URL?.trim() ||
     OPENROUTER_DEFAULT_BASE_URL

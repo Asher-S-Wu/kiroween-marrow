@@ -6,7 +6,6 @@ import {
   CURATED_OPENROUTER_MODELS,
   DEFAULT_ENSEMBLE_LINEUP,
   DEFAULT_SINGLE_MODEL,
-  OPENROUTER_DEFAULT_BASE_URL,
   shortModelLabel,
   type DeliberationRoutingMode,
 } from '@/skeleton/llm/models';
@@ -14,7 +13,6 @@ import {
 export interface ClientLlmOverride {
   mode: DeliberationRoutingMode;
   apiKey: string;
-  baseUrl: string;
   model: string;
 }
 
@@ -24,7 +22,6 @@ export function getDefaultClientLlmOverride(): ClientLlmOverride {
   return {
     mode: 'ensemble',
     apiKey: '',
-    baseUrl: '',
     model: DEFAULT_SINGLE_MODEL,
   };
 }
@@ -40,7 +37,6 @@ export function loadStoredLlmOverride(): ClientLlmOverride {
     return {
       mode: parsed.mode === 'single' ? 'single' : 'ensemble',
       apiKey: parsed.apiKey ?? '',
-      baseUrl: parsed.baseUrl ?? '',
       model: parsed.model || DEFAULT_SINGLE_MODEL,
     };
   } catch {
@@ -58,7 +54,6 @@ export function buildLlmHeaders(override: ClientLlmOverride): Record<string, str
     'x-llm-mode': override.mode,
   };
   if (override.apiKey.trim()) headers['x-llm-api-key'] = override.apiKey.trim();
-  if (override.baseUrl.trim()) headers['x-llm-base-url'] = override.baseUrl.trim();
   if (override.mode === 'single' && override.model.trim()) {
     headers['x-llm-model'] = override.model.trim();
   }
@@ -303,8 +298,7 @@ export function ModelSettingsPopover({
               </div>
             )}
 
-            {/* OpenRouter API Key + Optional Base URL */}
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="mt-5">
               <label className="block">
                 <span className="block text-xs font-medium mb-1.5" style={{ color: 'var(--arena-muted)' }}>
                   OpenRouter API Key (optional BYOK)
@@ -323,23 +317,6 @@ export function ModelSettingsPopover({
                 />
               </label>
 
-              <label className="block">
-                <span className="block text-xs font-medium mb-1.5" style={{ color: 'var(--arena-muted)' }}>
-                  Base URL (defaults to OpenRouter)
-                </span>
-                <input
-                  type="url"
-                  value={draft.baseUrl}
-                  onChange={(e) => setDraft({ ...draft, baseUrl: e.target.value })}
-                  placeholder={OPENROUTER_DEFAULT_BASE_URL}
-                  className="w-full border px-3 py-2 font-mono text-xs outline-none focus:ring-1"
-                  style={{
-                    backgroundColor: 'var(--arena-surface)',
-                    borderColor: 'var(--arena-border)',
-                    color: 'var(--arena-ink)',
-                  }}
-                />
-              </label>
             </div>
 
             <div
