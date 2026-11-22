@@ -8,6 +8,13 @@ Marrow is a declarative multi-agent cross-examination and evidence-graph skeleto
 
 ## Two Applications Powered by `src/skeleton/`
 
+Built with Kiro for the Kiroween 2026 Skeleton Crew category. Try the two live applications and inspect the source folder for each.
+
+- **Postmortem Court** follows a checkout failure from the first log entry to a proposed fix. [Open the app](https://marrow-web-production.up.railway.app/court) · [Application source](src/apps/postmortem-court)
+- **Defense Tribunal** tests the claims in a manuscript and produces a revision checklist. [Open the app](https://marrow-web-production.up.railway.app/defense) · [Application source](src/apps/defense-tribunal)
+
+The submission includes a short project story, a Kiro usage write-up and a walkthrough for judges. [Submission materials](submission/devpost.md) · [Kiro specs, steering and hook](.kiro)
+
 | Arena | Route | Visual Register | Panel Examiners | Structured Deliverable |
 | :--- | :--- | :--- | :--- | :--- |
 | **Postmortem Court** | `/court` | Forensic Incident Room (Dark Steel) | SRE Coroner · Security Auditor · Performance Prosecutor | Causal Root-Cause Graph + Postmortem `.md` |
@@ -32,7 +39,7 @@ src/
 
 ## Quick Start
 
-1. Configure environment variables (`.env.local`):
+1. Use Node.js 24 or newer and a running MongoDB instance. Copy `.env.example` to `.env.local` and enter your server-side OpenRouter key:
    ```bash
    MONGODB_URI=mongodb://localhost:27017/marrow
    MONGODB_DB=marrow
@@ -49,7 +56,7 @@ src/
 
 2. Install and run locally:
    ```bash
-   npm install
+   npm ci
    npm run dev
    ```
 
@@ -61,7 +68,7 @@ src/
 
 ## Adding a Third Arena
 
-1. Create `src/apps/<your-arena>/domain.spec.ts` implementing `DomainSpec<YourVerdict>`.
+1. Define the new app ID in the session and domain schemas, then create `src/apps/<your-arena>/domain.spec.ts` implementing `DomainSpec<YourVerdict>`.
 2. Mount `createDeliberationHandlers(yourSpec)` under `src/app/api/<your-arena>/sessions/...`.
 3. Render `<TribunalWorkbench spec={yourSpec} ... />` in your App Router page.
 

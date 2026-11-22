@@ -1,0 +1,43 @@
+1
+00:00:00,300 --> 00:00:03,634
+Marrow helps you trace a conclusion back to its evidence.
+
+2
+00:00:06,200 --> 00:00:11,009
+Postmortem Court opens with a checkout outage. The database pool is full.
+
+3
+00:00:12,600 --> 00:00:17,779
+Submit the case. Marrow labels the source material so each examiner can cite it.
+
+4
+00:00:20,600 --> 00:00:26,814
+In round two, each examiner challenges a colleague. Their citations point back to the same exhibits.
+
+5
+00:00:29,700 --> 00:00:34,064
+The panel traces the outage to a cancelled order that left a database connection open.
+
+6
+00:00:37,300 --> 00:00:43,064
+Click a graph node to inspect the evidence. Export the report to keep the findings and transcript.
+
+7
+00:00:45,200 --> 00:00:51,108
+Now open Defense Tribunal. A research team claims its new search method gives more accurate answers.
+
+8
+00:00:53,700 --> 00:00:58,139
+The same engine labels manuscript passages and seats three academic reviewers.
+
+9
+00:01:01,400 --> 00:01:07,753
+Their question is different. Does the new method win because it is better, or because it gets more computing time?
+
+10
+00:01:11,300 --> 00:01:17,233
+The editor asks for a fair comparison. The decision letter lists the blocking flaws and the experiments needed.
+
+11
+00:01:19,200 --> 00:01:25,579
+Both apps share the evidence graph, review engine and storage. Each supplies its own questions and report.
